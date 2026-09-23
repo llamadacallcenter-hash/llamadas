@@ -1,6 +1,18 @@
 const SHEET_NAME = 'Llamadas';
 const ADVISOR_SHEET_NAME = 'Asesores';
 
+function formatDurationValue(value) {
+  if (!value) return '';
+  const rawValue = value instanceof Date
+    ? Utilities.formatDate(value, Session.getScriptTimeZone(), 'HH:mm:ss')
+    : String(value).trim();
+  const match = rawValue.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  if (!match) return '';
+  const [, hours, minutes, seconds] = match;
+  if (seconds !== undefined && Number(hours) === 0) return `${minutes}:${seconds}`;
+  return `${hours}:${minutes}`;
+}
+
 function doGet(event) {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 
@@ -32,7 +44,7 @@ function doGet(event) {
       const date = row[0] instanceof Date ? row[0] : new Date(row[0]);
       const durationIndex = headerMap['duración'] !== undefined ? headerMap['duración'] : headerMap['duracion'];
       const justificationIndex = headerMap['justificatorio'] !== undefined ? headerMap['justificatorio'] : headerMap['justificativos'];
-      const duracion = durationIndex !== undefined ? String(row[durationIndex] || '') : '';
+      const duracion = durationIndex !== undefined ? formatDurationValue(row[durationIndex]) : '';
       const justificatorio = String((justificationIndex !== undefined ? row[justificationIndex] : row[10] || row[9]) || '');
       rows.push({
         fila: values.indexOf(row) + 2,
@@ -101,7 +113,9 @@ function doPost(event) {
 
   const data = event.parameter;
   const callDate = data.fecha ? new Date(`${data.fecha}T${data.hora || '12:00'}:00`) : new Date();
-  sheet.appendRow([
+  const nextRow = sheet.getLastRow() + 1;
+  sheet.getRange(nextRow, 10).setNumberFormat('@');
+  sheet.getRange(nextRow, 1, 1, 11).setValues([[
     callDate,
     data.cliente || '',
     data.telefono || '',
@@ -113,7 +127,7 @@ function doPost(event) {
     data.hora || '',
     data.duracion || '',
     data.justificatorio || ''
-  ]);
+  ]]);
 
   return ContentService
     .createTextOutput(JSON.stringify({ ok: true }))
