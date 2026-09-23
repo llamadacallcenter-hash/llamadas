@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const GOOGLE_SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyLSDdVwLraJu7YAu16bEhVylVvqFaklt5b3FQIgz6AVgDwngRyZBun8RFhIUxT2Lr7/exec';
+  const GOOGLE_SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzFAKSrqRCHPqc_r9SW7J9GH8SZF095uyMhOwyE56uhAjl8lnsqv-wJ3aUDhZIyk9rd/exec';
 
   const dashboardData = {
     total: 0,
@@ -22,12 +22,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const formatDuration = (value) => {
     const rawValue = String(value || '').trim();
     if (!rawValue) return '-';
+    const dateTimeMatch = rawValue.match(/\b(\d{2}):(\d{2}):(\d{2})\b/);
+    if (rawValue.includes('GMT') && dateTimeMatch) {
+      return `${dateTimeMatch[1]}:${dateTimeMatch[2]}`;
+    }
     const match = rawValue.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
     if (!match) return rawValue;
     const [, hours, minutes, seconds] = match;
     if (seconds !== undefined) {
       if (Number(hours) === 0) return `${minutes}:${seconds}`;
-      return `${hours}:${minutes}:${seconds}`;
+      return `${hours}:${minutes}`;
     }
     return `${hours}:${minutes}`;
   };
