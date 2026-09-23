@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return `${dateTimeMatch[1]}:${dateTimeMatch[2]}`;
     }
     const match = rawValue.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-    if (!match) return rawValue;
+    if (!match) return '-';
     const [, hours, minutes, seconds] = match;
     if (seconds !== undefined) {
       if (Number(hours) === 0) return `${minutes}:${seconds}`;
