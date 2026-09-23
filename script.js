@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     date: '',
     status: 'Todos'
   };
+  const recordsPageSize = 6;
+  let recordsPage = 1;
 
   const numberFormat = (value) => new Intl.NumberFormat('es-ES').format(value);
   const resolveCallTime = (call) => {
@@ -178,13 +180,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const rows = getFilteredCalls();
     const recentBody = document.querySelector('#recent-calls-body');
     const recordsList = document.querySelector('#records-list');
+    const pagination = document.querySelector('#records-pagination');
+    const pageIndicator = document.querySelector('#records-page-indicator');
+    const previousPageButton = document.querySelector('#records-prev-page');
+    const nextPageButton = document.querySelector('#records-next-page');
+    const totalPages = Math.max(1, Math.ceil(rows.length / recordsPageSize));
+    recordsPage = Math.min(recordsPage, totalPages);
+    const pageStart = (recordsPage - 1) * recordsPageSize;
+    const pageRows = rows.slice(pageStart, pageStart + recordsPageSize);
     const rowHtml = rows.slice(0, 10).map((call) => `<tr>
       <td>${call.fecha}</td><td>${call.telefono}</td><td>${call.cliente}</td>
       <td>${call.asesor}</td><td>${call.tienda}</td><td>${call.motivo}</td>
       <td>${call.estado}${call.estadoSecundario ? ` + ${call.estadoSecundario}` : ''}</td><td>—</td><td class="actions">●</td>
     </tr>`).join('');
     recentBody.innerHTML = rowHtml || '<tr><td colspan="9">Aún no hay llamadas registradas.</td></tr>';
-    recordsList.innerHTML = rows.slice(0, 10).map((call, index) => `<article class="record-card" data-call-index="${calls.findIndex((item) => item === call)}"><div><span>Fecha y hora</span><strong>${(call.fecha || '-').split(' ')[0]} ${resolveCallTime(call)}</strong></div><div><span>Duración</span><strong>${formatDuration(call.duracion)}</strong></div><div><span>Número</span><strong>${call.telefono || '-'}</strong></div><div><span>Estado</span><strong>${call.estado || '-'}${call.estadoSecundario ? ` + ${call.estadoSecundario}` : ''}</strong></div><div><span>Ver detalle</span><strong>→</strong></div></article>`).join('') || '<p class="empty-message">Aún no hay registros.</p>';
+    recordsList.innerHTML = pageRows.map((call) => `<article class="record-card" data-call-index="${calls.findIndex((item) => item === call)}"><div><span>Fecha y hora</span><strong>${(call.fecha || '-').split(' ')[0]} ${resolveCallTime(call)}</strong></div><div><span>Duración</span><strong>${formatDuration(call.duracion)}</strong></div><div><span>Número</span><strong>${call.telefono || '-'}</strong></div><div><span>Estado</span><strong>${call.estado || '-'}${call.estadoSecundario ? ` + ${call.estadoSecundario}` : ''}</strong></div><div><span>Ver detalle</span><strong>→</strong></div></article>`).join('') || '<p class="empty-message">Aún no hay registros.</p>';
+    pagination.hidden = rows.length <= recordsPageSize;
+    pageIndicator.textContent = `Página ${recordsPage} de ${totalPages}`;
+    previousPageButton.disabled = recordsPage === 1;
+    nextPageButton.disabled = recordsPage === totalPages;
     document.querySelector('[data-record-today="true"]').textContent = numberFormat(rows.length);
     document.querySelector('[data-record-total="true"]').textContent = numberFormat(rows.length);
     document.querySelector('[data-record-average="true"]').textContent = numberFormat(rows.length);
@@ -329,8 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const card = event.target.closest('.record-card[data-call-index]');
     if (card) {
       const index = Number(card.dataset.callIndex);
-      const filteredItems = getFilteredCalls();
-      const selected = filteredItems[index] || calls[index];
+      const selected = calls[index];
       if (selected) {
         showCallDetail(selected);
       }
@@ -340,22 +353,37 @@ document.addEventListener('DOMContentLoaded', () => {
   const recordsDateFilter = document.querySelector('#records-date-filter');
   const recordsStatusFilter = document.querySelector('#records-status-filter');
   const clearRecordsFiltersButton = document.querySelector('#clear-records-filters');
+  const previousRecordsPageButton = document.querySelector('#records-prev-page');
+  const nextRecordsPageButton = document.querySelector('#records-next-page');
 
   recordsDateFilter.addEventListener('change', (event) => {
     recordFilters.date = event.target.value;
+    recordsPage = 1;
     renderRecords();
   });
 
   recordsStatusFilter.addEventListener('change', (event) => {
     recordFilters.status = event.target.value;
+    recordsPage = 1;
     renderRecords();
   });
 
   clearRecordsFiltersButton.addEventListener('click', () => {
     recordFilters.date = '';
     recordFilters.status = 'Todos';
+    recordsPage = 1;
     recordsDateFilter.value = '';
     recordsStatusFilter.value = 'Todos';
+    renderRecords();
+  });
+
+  previousRecordsPageButton.addEventListener('click', () => {
+    recordsPage = Math.max(1, recordsPage - 1);
+    renderRecords();
+  });
+
+  nextRecordsPageButton.addEventListener('click', () => {
+    recordsPage += 1;
     renderRecords();
   });
 
