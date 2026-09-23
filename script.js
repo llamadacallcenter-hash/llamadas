@@ -41,6 +41,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
   };
+  const normalizeDateForFilter = (value) => {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    const datePart = raw.split(/[ T]/)[0];
+    const dayFirstMatch = datePart.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+    if (dayFirstMatch) {
+      const [, day, month, year] = dayFirstMatch;
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+    const isoMatch = datePart.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})$/);
+    if (isoMatch) {
+      const [, year, month, day] = isoMatch;
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+    return '';
+  };
   const updateCurrentDateTime = () => {
     const pill = document.querySelector('#date-time-pill');
     if (!pill) return;
@@ -151,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function getFilteredCalls() {
     return calls.filter((call) => {
-      const callDate = (call.fecha || '').split(' ')[0];
+      const callDate = normalizeDateForFilter(call.fecha);
       const matchesDate = !recordFilters.date || callDate === recordFilters.date;
       const matchesStatus = recordFilters.status === 'Todos' || call.estado === recordFilters.status || call.estadoSecundario === recordFilters.status;
       return matchesDate && matchesStatus;
