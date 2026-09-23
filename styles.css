@@ -617,6 +617,13 @@ button, input, select {
   color: #2d1b16;
 }
 
+.global-date-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin: 4px 0 14px;
+}
+
 .topbar {
   display: flex;
   align-items: center;
