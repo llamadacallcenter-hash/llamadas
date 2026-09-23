@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Donde Walter | Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=3" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-block">
+          <div class="brand-mark">
+            <div class="phone-icon">
+              <span class="mic"></span>
+            </div>
+          </div>
+          <div class="brand-text">
+            <span class="brand-line">DONDE</span>
+            <span class="brand-line accent">WALTER</span>
+            <span class="brand-sub">CALL CENTER</span>
+          </div>
+        </div>
+
+        <nav class="side-nav" aria-label="Navegación principal">
+          <button type="button" class="nav-item active" data-tab="dashboard" aria-label="Dashboard">
+            <span class="nav-icon home-icon">⌂</span>
+            <span>Dashboard</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="registrar-llamada" aria-label="Registrar llamada">
+            <span class="nav-icon">◔</span>
+            <span>Registrar llamada</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="registros" aria-label="Registros">
+            <span class="nav-icon">▣</span>
+            <span>Registros</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="justificaciones" aria-label="Justificaciones">
+            <span class="nav-icon">☑</span>
+            <span>Justificaciones</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="asesores" aria-label="Asesores">
+            <span class="nav-icon">◍</span>
+            <span>Asesores</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="tiendas" aria-label="Tiendas">
+            <span class="nav-icon">▤</span>
+            <span>Tiendas</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="reportes" aria-label="Reportes">
+            <span class="nav-icon">▥</span>
+            <span>Reportes</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="exportar-excel" aria-label="Exportar Excel">
+            <span class="nav-icon">↓</span>
+            <span>Exportar Excel</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="configuracion" aria-label="Configuración">
+            <span class="nav-icon">⚙</span>
+            <span>Configuración</span>
+          </button>
+        </nav>
+
+        <div class="promo">
+          <span>Tu llamada</span>
+          <span>nos acerca</span>
+          <span class="heart">más ❤</span>
+        </div>
+      </aside>
+
+      <main class="content-panel">
+        <section class="view-panel active" data-panel="dashboard">
+          <header class="topbar">
+            <div class="header-main">
+              <div>
+                <h1>Dashboard</h1>
+                <p>Control de llamadas del Call Center</p>
+              </div>
+            </div>
+
+            <div class="filters">
+              <div class="pill date-pill">01/09/2026 - 30/09/2026</div>
+              <div class="pill">Todas las tiendas</div>
+              <div class="pill">Todos los asesores</div>
+            </div>
+
+            <div class="user-area">
+              <div class="user-avatar">G</div>
+              <div class="user-meta">
+                <strong>Gabriel</strong>
+                <span>Administrador</span>
+              </div>
+              <div class="service-badge">Buen servicio<br />más clientes</div>
+            </div>
+          </header>
+
+          <section class="stats-grid">
+            <article class="stat-card primary" data-card="total">
+              <div class="stat-icon grey">
+                <span>◔</span>
+              </div>
+              <div class="stat-value-wrap">
+                <div class="stat-value" data-value="total">0</div>
+                <div class="stat-trend up" data-trend="total">Datos reales</div>
+              </div>
+              <div class="stat-meta-line">
+                <span class="stat-caption">vs.</span>
+                <span class="stat-caption">mes anterior</span>
+              </div>
+              <div class="stat-label">Total de llamadas</div>
+            </article>
+
+            <article class="stat-card success" data-card="atendidas">
+              <div class="stat-icon green">
+                <span>◐</span>
+              </div>
+              <div class="stat-value-wrap">
+                <div class="stat-value" data-value="atendidas">0</div>
+                <div class="stat-trend up" data-trend="atendidas">0%</div>
+              </div>
+              <div class="stat-label">Llamadas atendidas</div>
+              <div class="mini-bar"><span data-bar="atendidas" style="width: 0%"></span></div>
+            </article>
+
+            <article class="stat-card danger" data-card="noContestadas">
+              <div class="stat-icon red">
+                <span>✕</span>
+              </div>
+              <div class="stat-value-wrap">
+                <div class="stat-value" data-value="noContestadas">0</div>
+                <div class="stat-trend up" data-trend="noContestadas">0%</div>
+              </div>
+              <div class="stat-label">No contestadas</div>
+              <div class="mini-bar"><span data-bar="noContestadas" style="width: 0%"></span></div>
+            </article>
+
+            <article class="stat-card info" data-card="justificadas">
+              <div class="stat-icon blue">
+                <span>☰</span>
+              </div>
+              <div class="stat-value-wrap">
+                <div class="stat-value" data-value="justificadas">0</div>
+                <div class="stat-trend up" data-trend="justificadas">0%</div>
+              </div>
+              <div class="stat-label">Justificadas</div>
+              <div class="mini-bar"><span data-bar="justificadas" style="width: 0%"></span></div>
+            </article>
+
+            <article class="stat-card warning" data-card="noJustificadas">
+              <div class="stat-icon yellow">
+                <span>!</span>
+              </div>
+              <div class="stat-value-wrap">
+                <div class="stat-value" data-value="noJustificadas">0</div>
+                <div class="stat-trend up" data-trend="noJustificadas">0%</div>
+              </div>
+              <div class="stat-label">No justificadas</div>
+              <div class="mini-bar"><span data-bar="noJustificadas" style="width: 0%"></span></div>
+            </article>
+
+            <article class="stat-card purple" data-card="recuperadas">
+              <div class="stat-icon purple-bg">
+                <span>↻</span>
+              </div>
+              <div class="stat-value-wrap">
+                <div class="stat-value" data-value="recuperadas">0</div>
+                <div class="stat-trend up" data-trend="recuperadas">0%</div>
+              </div>
+              <div class="stat-label">Recuperadas<br />(Devueltas)</div>
+              <div class="mini-bar"><span data-bar="recuperadas" style="width: 0%"></span></div>
+            </article>
+          </section>
+
+          <section class="metrics-row">
+            <article class="panel donut-panel">
+              <h3>Estado de las llamadas</h3>
+              <div class="donut-wrap">
+                <div class="donut-chart donut-main empty">
+                  <div class="donut-center">
+                    <strong data-donut-total="true">0</strong>
+                    <span>llamadas</span>
+                  </div>
+                </div>
+                <div class="legend-list">
+                  <div class="legend-item">
+                    <span class="dot green"></span>
+                    <span>Atendidas</span>
+                    <strong data-rate="atendidas">0%</strong>
+                  </div>
+                  <div class="legend-item">
+                    <span class="dot red"></span>
+                    <span>No contestadas</span>
+                    <strong data-rate="noContestadas">0%</strong>
+                  </div>
+                  <div class="legend-item">
+                    <span class="dot yellow"></span>
+                    <span>Recuperación</span>
+                    <strong data-rate="recuperadas">0%</strong>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel donut-panel">
+              <h3>Justificación de llamadas no contestadas</h3>
+              <div class="donut-wrap">
+                <div class="donut-chart donut-justification empty">
+                  <div class="donut-center">
+                    <strong data-donut-no-contestadas="true">0</strong>
+                    <span>no contestadas</span>
+                  </div>
+                </div>
+                <div class="legend-list">
+                  <div class="legend-item">
+                    <span class="dot blue"></span>
+                    <span>Justificadas</span>
+                    <strong data-rate="justificadas">0%</strong>
+                  </div>
+                  <div class="legend-item">
+                    <span class="dot orange"></span>
+                    <span>No justificadas</span>
+                    <strong data-rate="noJustificadas">0%</strong>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel segmented-panel">
+              <h3>Llamadas no contestadas por motivo</h3>
+              <div class="bar-stack">
+                <div class="stack-row">
+                  <span>Alta demanda</span>
+                  <div class="stack-rail"><span style="width: 0%"></span></div>
+                  <strong>0</strong>
+                </div>
+                <div class="stack-row">
+                  <span>Llamada colgada</span>
+                  <div class="stack-rail"><span class="green" style="width: 0%"></span></div>
+                  <strong>0</strong>
+                </div>
+                <div class="stack-row">
+                  <span>Falla del sistema</span>
+                  <div class="stack-rail"><span class="yellow" style="width: 0%"></span></div>
+                  <strong>0</strong>
+                </div>
+                <div class="stack-row">
+                  <span>Fuera de horario</span>
+                  <div class="stack-rail"><span class="mint" style="width: 0%"></span></div>
+                  <strong>0</strong>
+                </div>
+                <div class="stack-row">
+                  <span>Otros</span>
+                  <div class="stack-rail"><span class="gray" style="width: 0%"></span></div>
+                  <strong>0</strong>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="charts-row empty">
+            <article class="panel line-panel">
+              <h3>Evolución de llamadas</h3>
+              <svg viewBox="0 0 420 210" class="line-chart" aria-label="Evolución de llamadas">
+                <g class="grid-lines">
+                  <line x1="32" y1="30" x2="390" y2="30" />
+                  <line x1="32" y1="75" x2="390" y2="75" />
+                  <line x1="32" y1="120" x2="390" y2="120" />
+                  <line x1="32" y1="165" x2="390" y2="165" />
+                </g>
+                <path d="M32 150 L60 140 L92 148 L126 130 L162 138 L196 120 L230 108 L264 126 L298 100 L332 115 L366 88 L390 94" class="line green" />
+                <path d="M32 160 L60 155 L92 150 L126 143 L162 154 L196 160 L230 148 L264 160 L298 150 L332 152 L366 146 L390 150" class="line red" />
+                <g class="points green"><circle cx="32" cy="150" r="4" /><circle cx="60" cy="140" r="4" /><circle cx="92" cy="148" r="4" /><circle cx="126" cy="130" r="4" /><circle cx="162" cy="138" r="4" /><circle cx="196" cy="120" r="4" /><circle cx="230" cy="108" r="4" /><circle cx="264" cy="126" r="4" /><circle cx="298" cy="100" r="4" /><circle cx="332" cy="115" r="4" /><circle cx="366" cy="88" r="4" /><circle cx="390" cy="94" r="4" /></g>
+                <g class="points red"><circle cx="32" cy="160" r="4" /><circle cx="60" cy="155" r="4" /><circle cx="92" cy="150" r="4" /><circle cx="126" cy="143" r="4" /><circle cx="162" cy="154" r="4" /><circle cx="196" cy="160" r="4" /><circle cx="230" cy="148" r="4" /><circle cx="264" cy="160" r="4" /><circle cx="298" cy="150" r="4" /><circle cx="332" cy="152" r="4" /><circle cx="366" cy="146" r="4" /><circle cx="390" cy="150" r="4" /></g>
+              </svg>
+              <div class="chart-legend">
+                <span><i class="dot green"></i> Atendidas</span>
+                <span><i class="dot red"></i> No contestadas</span>
+              </div>
+            </article>
+
+            <article class="panel bar-panel">
+              <h3>Llamadas no contestadas por asesor</h3>
+              <div class="bars bars-vertical" id="advisor-chart-bars"></div>
+            </article>
+
+            <article class="panel bar-panel">
+              <h3>Llamadas no contestadas por tienda</h3>
+              <div class="bars bars-vertical">
+                <div class="bar-group"><span class="bar gray" style="height: 0%"></span><label>Santa Clara</label></div>
+                <div class="bar-group"><span class="bar gray" style="height: 0%"></span><label>Chaclacayo</label></div>
+                <div class="bar-group"><span class="bar gray" style="height: 0%"></span><label>Surco</label></div>
+              </div>
+            </article>
+          </section>
+
+          <section class="table-section panel">
+            <div class="table-head">
+              <h3>Últimas llamadas no contestadas</h3>
+              <a href="#">Ver todas</a>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha y hora</th>
+                  <th>Número</th>
+                  <th>Cliente</th>
+                  <th>Asesor</th>
+                  <th>Tienda</th>
+                  <th>Motivo</th>
+                  <th>Estado</th>
+                  <th>¿Se devolvió?</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="recent-calls-body"></tbody>
+            </table>
+          </section>
+
+          <footer class="app-footer">
+            <div>DONDE WALTER | Call Center</div>
+            <div>Más que llamadas, más personas</div>
+            <div>v1.0.0 | 2026</div>
+          </footer>
+        </section>
+
+        <section class="view-panel" data-panel="registrar-llamada">
+          <div class="tab-page">
+            <h2>Registrar llamada</h2>
+            <form class="form-card" id="call-form">
+              <div class="form-grid">
+                <label>
+                  <span>Fecha de la llamada</span>
+                  <input name="fecha" type="date" required />
+                </label>
+                <label>
+                  <span>Hora de la llamada</span>
+                  <input name="hora" type="time" required />
+                </label>
+                <label>
+                  <span>Duración</span>
+                  <input name="duracion" type="text" inputmode="numeric" placeholder="mm:ss o hh:mm:ss" pattern="\d{1,2}:\d{2}(:\d{2})?" required />
+                </label>
+                <label>
+                  <span>Número de teléfono</span>
+                  <input name="telefono" type="tel" placeholder="987 654 321" required />
+                </label>
+                <label>
+                  <span>Estado principal</span>
+                  <select name="estado" required>
+                    <option value="">Seleccionar estado</option>
+                    <option>Atendida</option>
+                    <option>No contestada</option>
+                    <option>Justificada</option>
+                    <option>Recuperación de llamadas</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Estado adicional</span>
+                  <select name="estadoSecundario">
+                    <option value="">Sin segundo estado</option>
+                    <option>Atendida</option>
+                    <option>No contestada</option>
+                    <option>Justificada</option>
+                    <option>Recuperación de llamadas</option>
+                  </select>
+                </label>
+                <label class="justification-field hidden" id="justification-field">
+                  <span>Justificatorio</span>
+                  <select name="justificacionTipo">
+                    <option value="">Seleccionar motivo</option>
+                    <option value="Llamada colgada">Llamada colgada</option>
+                    <option value="Falla del sistema">Falla del sistema</option>
+                    <option value="Alta demanda">Alta demanda</option>
+                    <option value="Fuera de horario">Fuera de horario</option>
+                    <option value="Otros">Otros</option>
+                  </select>
+                  <textarea name="justificatorio" rows="3" class="hidden" placeholder="Escribe el motivo de la justificación"></textarea>
+                </label>
+              </div>
+              <div class="form-actions">
+                <button class="primary-btn" type="submit">Guardar llamada</button>
+                <button class="secondary-btn" type="reset">Limpiar</button>
+              </div>
+              <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+            </form>
+          </div>
+        </section>
+
+        <section class="view-panel" data-panel="registros">
+          <div class="tab-page">
+            <h2>Registros</h2>
+            <div class="records-grid">
+              <div class="record-box">
+                <span class="record-label">Hoy</span>
+                <strong data-record-today="true">0</strong>
+                <small>llamadas capturadas</small>
+              </div>
+              <div class="record-box">
+                <span class="record-label">Mes</span>
+                <strong data-record-total="true">0</strong>
+                <small>total del periodo</small>
+              </div>
+              <div class="record-box">
+                <span class="record-label">Promedio</span>
+                <strong data-record-average="true">0</strong>
+                <small>llamadas/día</small>
+              </div>
+            </div>
+            <div class="record-cards" id="records-list"></div>
+            <div class="call-detail hidden" id="call-detail" aria-live="polite">
+              <div class="call-detail-card">
+                <div class="call-detail-head">
+                  <h3>Detalle de la llamada</h3>
+                  <button class="secondary-btn" type="button" id="close-call-detail">Cerrar</button>
+                </div>
+                <div class="call-detail-grid">
+                  <div><span>Fecha</span><strong id="detail-date">-</strong></div>
+                  <div><span>Hora</span><strong id="detail-time">-</strong></div>
+                  <div><span>Duración</span><strong id="detail-duration">-</strong></div>
+                  <div><span>Número</span><strong id="detail-phone">-</strong></div>
+                  <div><span>Estado principal</span><strong id="detail-status">-</strong></div>
+                  <div class="detail-secondary-status hidden"><span>Estado adicional</span><strong id="detail-secondary-status">-</strong></div>
+                  <div><span>Justificatorio</span><strong id="detail-justification">-</strong></div>
+                  <div><span>Asesor</span><select id="detail-advisor"></select></div>
+                  <div><span>Tienda</span><select id="detail-store"></select></div>
+                </div>
+                <div class="call-detail-actions">
+                  <p class="form-status" id="advisor-detail-status" role="status" aria-live="polite"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view-panel" data-panel="justificaciones">
+          <div class="tab-page">
+            <h2>Justificaciones</h2>
+            <div class="status-cards">
+              <div class="status-box success">
+                <span>Aprobadas</span>
+                <strong data-justification-approved="true">0</strong>
+              </div>
+              <div class="status-box warning">
+                <span>Pendientes</span>
+                <strong data-justification-pending="true">0</strong>
+              </div>
+              <div class="status-box danger">
+                <span>Rechazadas</span>
+                <strong data-justification-rejected="true">0</strong>
+              </div>
+            </div>
+            <ul class="note-list" id="justification-list">
+              <li>Aún no hay justificatorios registrados.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="view-panel" data-panel="asesores">
+          <div class="tab-page">
+            <h2>Asesores</h2>
+            <form class="form-card assessor-form" id="assessor-form">
+              <input type="hidden" name="tipo" value="asesor" />
+              <div class="form-grid">
+                <label>
+                  <span>Nombre del asesor</span>
+                  <input name="nombre" type="text" placeholder="Nombre completo" required />
+                </label>
+              </div>
+              <div class="form-actions">
+                <button class="primary-btn" type="submit">Registrar asesor</button>
+              </div>
+              <p class="form-status" id="assessor-status" role="status" aria-live="polite"></p>
+            </form>
+            <div class="assessor-list" id="assessor-list">
+              <p class="empty-message">Aún no hay asesores registrados.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="view-panel" data-panel="tiendas">
+          <div class="tab-page">
+            <h2>Tiendas</h2>
+            <div class="shop-grid">
+              <div class="shop-box">
+                <span>Santa Clara</span>
+                <strong>0</strong>
+              </div>
+              <div class="shop-box">
+                <span>Chaclacayo</span>
+                <strong>0</strong>
+              </div>
+              <div class="shop-box">
+                <span>Surco</span>
+                <strong>0</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view-panel" data-panel="reportes">
+          <div class="tab-page">
+            <h2>Reportes</h2>
+            <div class="report-box">
+              <p>Reporte mensual</p>
+              <strong>0%</strong>
+              <small>eficiencia general del call center</small>
+            </div>
+            <div class="report-box muted">
+              <p>Reporte semanal</p>
+              <strong>0</strong>
+              <small>llamadas procesadas</small>
+            </div>
+          </div>
+        </section>
+
+        <section class="view-panel" data-panel="exportar-excel">
+          <div class="tab-page">
+            <h2>Exportar Excel</h2>
+            <div class="export-box">
+              <button class="primary-btn">Descargar reporte actual</button>
+              <button class="secondary-btn">Exportar historial</button>
+            </div>
+            <p class="muted-text">Último archivo generado: 20/09/2026 · 14:30</p>
+          </div>
+        </section>
+
+        <section class="view-panel" data-panel="configuracion">
+          <div class="tab-page">
+            <h2>Configuración</h2>
+            <div class="config-list">
+              <div><span>Horario laboral</span><strong>08:00 - 20:00</strong></div>
+              <div><span>Tiempo de espera</span><strong>30 segundos</strong></div>
+              <div><span>Notificaciones</span><strong>Activadas</strong></div>
+              <div><span>Backup</span><strong>Diario</strong></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js?v=3"></script>
+  </body>
+</html>
