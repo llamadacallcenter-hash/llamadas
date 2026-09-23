@@ -17,7 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const numberFormat = (value) => new Intl.NumberFormat('es-ES').format(value);
   const resolveCallTime = (call) => {
     if (!call) return '-';
-    return formatCallTime(call.hora) || formatCallTime(call.fecha) || '-';
+    const candidates = [call.hora, call.fecha, call.datetime, call.horaRegistro];
+    for (const candidate of candidates) {
+      const formatted = formatCallTime(candidate);
+      if (formatted !== '-') return formatted;
+    }
+    return '-';
   };
   const getLocalDateValue = () => {
     const now = new Date();
