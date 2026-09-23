@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const GOOGLE_SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzFAKSrqRCHPqc_r9SW7J9GH8SZF095uyMhOwyE56uhAjl8lnsqv-wJ3aUDhZIyk9rd/exec';
+  const GOOGLE_SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzg2L7nJKFe4UTiz-lfqZVGJ378nNefj8B10yGFXPWhq_txlZyRyPYmCUEnLfKQs9Ap/exec';
 
   const dashboardData = {
     total: 0,
@@ -15,6 +15,27 @@ document.addEventListener('DOMContentLoaded', () => {
   let selectedCall = null;
 
   const numberFormat = (value) => new Intl.NumberFormat('es-ES').format(value);
+  const getLocalDateValue = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  const getLocalTimeValue = () => {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+  const updateCurrentDateTime = () => {
+    const pill = document.querySelector('#date-time-pill');
+    if (!pill) return;
+    const now = new Date();
+    const date = new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(now);
+    const time = new Intl.DateTimeFormat('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false }).format(now);
+    pill.textContent = `${date} • ${time}`;
+  };
   const formatCallTime = (value) => {
     const match = String(value || '').match(/(\d{2}):(\d{2})/);
     return match ? `${match[1]}:${match[2]}` : '-';
@@ -339,8 +360,10 @@ document.addEventListener('DOMContentLoaded', () => {
     event.target.value = formatDurationInput(event.target.value);
   });
 
-  callDateInput.value = new Date().toISOString().slice(0, 10);
-  callTimeInput.value = new Date().toTimeString().slice(0, 5);
+  callDateInput.value = getLocalDateValue();
+  callTimeInput.value = getLocalTimeValue();
+  updateCurrentDateTime();
+  setInterval(updateCurrentDateTime, 30000);
 
   function toggleJustificationField() {
     const isJustified = primaryStatus.value === 'Justificada' || secondaryStatus.value === 'Justificada';
@@ -416,8 +439,8 @@ document.addEventListener('DOMContentLoaded', () => {
       formStatus.textContent = 'Llamada guardada en Google Sheets.';
       formStatus.className = 'form-status success';
       callForm.reset();
-      callDateInput.value = new Date().toISOString().slice(0, 10);
-      callTimeInput.value = new Date().toTimeString().slice(0, 5);
+      callDateInput.value = getLocalDateValue();
+      callTimeInput.value = getLocalTimeValue();
       await new Promise((resolve) => setTimeout(resolve, 700));
       await loadCalls();
     } catch (error) {
