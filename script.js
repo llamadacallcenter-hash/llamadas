@@ -13,6 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let calls = [];
   let advisors = [];
   let selectedCall = null;
+  const recordFilters = {
+    date: '',
+    status: 'Todos'
+  };
 
   const numberFormat = (value) => new Intl.NumberFormat('es-ES').format(value);
   const resolveCallTime = (call) => {
@@ -145,8 +149,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function getFilteredCalls() {
+    return calls.filter((call) => {
+      const callDate = (call.fecha || '').split(' ')[0];
+      const matchesDate = !recordFilters.date || callDate === recordFilters.date;
+      const matchesStatus = recordFilters.status === 'Todos' || call.estado === recordFilters.status || call.estadoSecundario === recordFilters.status;
+      return matchesDate && matchesStatus;
+    }).slice().reverse();
+  }
+
   function renderRecords() {
-    const rows = calls.slice().reverse();
+    const rows = getFilteredCalls();
     const recentBody = document.querySelector('#recent-calls-body');
     const recordsList = document.querySelector('#records-list');
     const rowHtml = rows.slice(0, 10).map((call) => `<tr>
@@ -155,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <td>${call.estado}${call.estadoSecundario ? ` + ${call.estadoSecundario}` : ''}</td><td>—</td><td class="actions">●</td>
     </tr>`).join('');
     recentBody.innerHTML = rowHtml || '<tr><td colspan="9">Aún no hay llamadas registradas.</td></tr>';
-    recordsList.innerHTML = rows.slice(0, 10).map((call, index) => `<article class="record-card" data-call-index="${calls.length - 1 - index}"><div><span>Fecha y hora</span><strong>${(call.fecha || '-').split(' ')[0]} ${resolveCallTime(call)}</strong></div><div><span>Duración</span><strong>${formatDuration(call.duracion)}</strong></div><div><span>Número</span><strong>${call.telefono || '-'}</strong></div><div><span>Estado</span><strong>${call.estado || '-'}${call.estadoSecundario ? ` + ${call.estadoSecundario}` : ''}</strong></div><div><span>Ver detalle</span><strong>→</strong></div></article>`).join('') || '<p class="empty-message">Aún no hay registros.</p>';
+    recordsList.innerHTML = rows.slice(0, 10).map((call, index) => `<article class="record-card" data-call-index="${calls.findIndex((item) => item === call)}"><div><span>Fecha y hora</span><strong>${(call.fecha || '-').split(' ')[0]} ${resolveCallTime(call)}</strong></div><div><span>Duración</span><strong>${formatDuration(call.duracion)}</strong></div><div><span>Número</span><strong>${call.telefono || '-'}</strong></div><div><span>Estado</span><strong>${call.estado || '-'}${call.estadoSecundario ? ` + ${call.estadoSecundario}` : ''}</strong></div><div><span>Ver detalle</span><strong>→</strong></div></article>`).join('') || '<p class="empty-message">Aún no hay registros.</p>';
     document.querySelector('[data-record-today="true"]').textContent = numberFormat(rows.length);
     document.querySelector('[data-record-total="true"]').textContent = numberFormat(rows.length);
     document.querySelector('[data-record-average="true"]').textContent = numberFormat(rows.length);
@@ -299,8 +312,35 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('#records-list').addEventListener('click', (event) => {
     const card = event.target.closest('.record-card[data-call-index]');
     if (card) {
-      showCallDetail(calls[Number(card.dataset.callIndex)]);
+      const index = Number(card.dataset.callIndex);
+      const filteredItems = getFilteredCalls();
+      const selected = filteredItems[index] || calls[index];
+      if (selected) {
+        showCallDetail(selected);
+      }
     }
+  });
+
+  const recordsDateFilter = document.querySelector('#records-date-filter');
+  const recordsStatusFilter = document.querySelector('#records-status-filter');
+  const clearRecordsFiltersButton = document.querySelector('#clear-records-filters');
+
+  recordsDateFilter.addEventListener('change', (event) => {
+    recordFilters.date = event.target.value;
+    renderRecords();
+  });
+
+  recordsStatusFilter.addEventListener('change', (event) => {
+    recordFilters.status = event.target.value;
+    renderRecords();
+  });
+
+  clearRecordsFiltersButton.addEventListener('click', () => {
+    recordFilters.date = '';
+    recordFilters.status = 'Todos';
+    recordsDateFilter.value = '';
+    recordsStatusFilter.value = 'Todos';
+    renderRecords();
   });
 
   document.querySelector('#close-call-detail').addEventListener('click', () => {
