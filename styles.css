@@ -475,6 +475,64 @@ button, input, select {
   margin-top: 18px;
 }
 
+.records-filters {
+  display: flex;
+  align-items: end;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--soft-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+.record-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 160px;
+  color: #4d3f39;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.record-filter input,
+.record-filter select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #d7d1ce;
+  border-radius: 10px;
+  background: #fff;
+  color: #2c231e;
+  padding: 10px 12px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.record-filter input:focus,
+.record-filter select:focus {
+  outline: none;
+  border-color: rgba(242, 106, 31, 0.7);
+  box-shadow: 0 0 0 4px rgba(242, 106, 31, 0.12);
+}
+
+#clear-records-filters {
+  min-height: 42px;
+  align-self: end;
+  padding-inline: 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(90, 70, 62, 0.18);
+  background: linear-gradient(180deg, #ffffff, #f3efed);
+  color: #2d1b16;
+  font-weight: 700;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+}
+
+#clear-records-filters:hover {
+  background: linear-gradient(180deg, #fffaf8, #f0ece9);
+}
+
 .record-box,
 .status-box,
 .shop-box,
