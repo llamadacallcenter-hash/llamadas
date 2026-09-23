@@ -414,6 +414,25 @@
                 <small>llamadas/día</small>
               </div>
             </div>
+
+            <div class="records-filters">
+              <label class="record-filter">
+                <span>Fecha</span>
+                <input id="records-date-filter" type="date" />
+              </label>
+              <label class="record-filter">
+                <span>Estado</span>
+                <select id="records-status-filter">
+                  <option value="Todos">Todos</option>
+                  <option value="Atendida">Atendida</option>
+                  <option value="No contestada">No contestada</option>
+                  <option value="Justificada">Justificada</option>
+                  <option value="Recuperación de llamadas">Recuperación de llamadas</option>
+                </select>
+              </label>
+              <button type="button" class="secondary-btn" id="clear-records-filters">Limpiar</button>
+            </div>
+
             <div class="record-cards" id="records-list"></div>
             <div class="call-detail hidden" id="call-detail" aria-live="polite">
               <div class="call-detail-card">
