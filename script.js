@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dashboardData.atendidas = calls.filter((call) => hasStatus(call, 'Atendida')).length;
     dashboardData.noContestadas = calls.filter((call) => hasStatus(call, 'No contestada')).length;
     dashboardData.justificadas = calls.filter((call) => hasStatus(call, 'Justificada')).length;
-    dashboardData.noJustificadas = calls.filter((call) => hasStatus(call, 'No justificada')).length;
+    dashboardData.noJustificadas = Math.max(0, dashboardData.noContestadas - dashboardData.justificadas);
     dashboardData.recuperadas = calls.filter((call) => hasStatus(call, 'Recuperación de llamadas')).length;
     renderDashboard();
     renderRecords();
@@ -251,8 +251,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function loadCalls() {
     const response = await fetch(GOOGLE_SHEETS_ENDPOINT);
-    const data = await response.json();
-    calls = Array.isArray(data) ? data.filter((call) => call && (call.cliente || call.telefono || call.asesor || call.tienda || call.motivo || call.estado)) : [];
+    const rawData = await response.json();
+    const rows = Array.isArray(rawData)
+      ? rawData
+      : Array.isArray(rawData.value)
+        ? rawData.value
+        : [];
+
+    calls = rows.filter((call) => call && (call.cliente || call.telefono || call.asesor || call.tienda || call.motivo || call.estado));
     updateDashboardData();
     renderAdvisorChart();
   }
