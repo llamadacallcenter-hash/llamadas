@@ -15,7 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let selectedCall = null;
 
   const numberFormat = (value) => new Intl.NumberFormat('es-ES').format(value);
-  const resolveCallTime = (call) => formatCallTime(call?.hora) || formatCallTime(call?.fecha) || '-';
+  const resolveCallTime = (call) => {
+    if (!call) return '-';
+    return formatCallTime(call.hora) || formatCallTime(call.fecha) || '-';
+  };
   const getLocalDateValue = () => {
     const now = new Date();
     const year = now.getFullYear();
@@ -38,8 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
     pill.textContent = `${date} • ${time}`;
   };
   const formatCallTime = (value) => {
-    const match = String(value || '').match(/(\d{2}):(\d{2})/);
-    return match ? `${match[1]}:${match[2]}` : '-';
+    const raw = String(value || '').trim();
+    if (!raw) return '-';
+    const match = raw.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    if (!match) return '-';
+    const hours = String(match[1]).padStart(2, '0');
+    const minutes = String(match[2]).padStart(2, '0');
+    return `${hours}:${minutes}`;
   };
   const formatDuration = (value) => {
     const rawValue = String(value || '').trim();
