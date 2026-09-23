@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let selectedCall = null;
 
   const numberFormat = (value) => new Intl.NumberFormat('es-ES').format(value);
+  const resolveCallTime = (call) => formatCallTime(call?.hora) || formatCallTime(call?.fecha) || '-';
   const getLocalDateValue = () => {
     const now = new Date();
     const year = now.getFullYear();
@@ -141,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <td>${call.estado}${call.estadoSecundario ? ` + ${call.estadoSecundario}` : ''}</td><td>—</td><td class="actions">●</td>
     </tr>`).join('');
     recentBody.innerHTML = rowHtml || '<tr><td colspan="9">Aún no hay llamadas registradas.</td></tr>';
-    recordsList.innerHTML = rows.slice(0, 10).map((call, index) => `<article class="record-card" data-call-index="${calls.length - 1 - index}"><div><span>Fecha y hora</span><strong>${(call.fecha || '-').split(' ')[0]} ${formatCallTime(call.hora)}</strong></div><div><span>Duración</span><strong>${formatDuration(call.duracion)}</strong></div><div><span>Número</span><strong>${call.telefono || '-'}</strong></div><div><span>Estado</span><strong>${call.estado || '-'}${call.estadoSecundario ? ` + ${call.estadoSecundario}` : ''}</strong></div><div><span>Ver detalle</span><strong>→</strong></div></article>`).join('') || '<p class="empty-message">Aún no hay registros.</p>';
+    recordsList.innerHTML = rows.slice(0, 10).map((call, index) => `<article class="record-card" data-call-index="${calls.length - 1 - index}"><div><span>Fecha y hora</span><strong>${(call.fecha || '-').split(' ')[0]} ${resolveCallTime(call)}</strong></div><div><span>Duración</span><strong>${formatDuration(call.duracion)}</strong></div><div><span>Número</span><strong>${call.telefono || '-'}</strong></div><div><span>Estado</span><strong>${call.estado || '-'}${call.estadoSecundario ? ` + ${call.estadoSecundario}` : ''}</strong></div><div><span>Ver detalle</span><strong>→</strong></div></article>`).join('') || '<p class="empty-message">Aún no hay registros.</p>';
     document.querySelector('[data-record-today="true"]').textContent = numberFormat(rows.length);
     document.querySelector('[data-record-total="true"]').textContent = numberFormat(rows.length);
     document.querySelector('[data-record-average="true"]').textContent = numberFormat(rows.length);
@@ -153,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const secondaryStatusField = document.querySelector('.detail-secondary-status');
     const fields = {
       '#detail-date': (call.fecha || '').split(' ')[0],
-      '#detail-time': formatCallTime(call.hora),
+      '#detail-time': resolveCallTime(call),
       '#detail-duration': formatDuration(call.duracion),
       '#detail-phone': call.telefono,
       '#detail-status': call.estado,
