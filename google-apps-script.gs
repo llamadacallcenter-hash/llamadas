@@ -32,7 +32,7 @@ function doGet(event) {
       const date = row[0] instanceof Date ? row[0] : new Date(row[0]);
       const durationIndex = headerMap['duración'] !== undefined ? headerMap['duración'] : headerMap['duracion'];
       const justificationIndex = headerMap['justificatorio'] !== undefined ? headerMap['justificatorio'] : headerMap['justificativos'];
-      const duracion = String((durationIndex !== undefined ? row[durationIndex] : row[9]) || '');
+      const duracion = durationIndex !== undefined ? String(row[durationIndex] || '') : '';
       const justificatorio = String((justificationIndex !== undefined ? row[justificationIndex] : row[10] || row[9]) || '');
       rows.push({
         fila: values.indexOf(row) + 2,
