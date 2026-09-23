@@ -1229,6 +1229,37 @@ tbody tr:nth-child(odd) {
 
   .sidebar {
     width: 100%;
+    padding-top: 16px;
+  }
+
+  .brand-block {
+    padding-bottom: 14px;
+  }
+
+  .side-nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    padding-top: 0;
+  }
+
+  .nav-item {
+    justify-content: center;
+    padding: 10px 8px;
+    font-size: 0.92rem;
+    text-align: center;
+  }
+
+  .nav-item span:last-child {
+    overflow-wrap: anywhere;
+  }
+
+  .nav-icon {
+    display: none;
+  }
+
+  .promo {
+    display: none;
   }
 
   .stats-grid {
@@ -1253,6 +1284,49 @@ tbody tr:nth-child(odd) {
     padding-right: 10px;
   }
 
+  .topbar,
+  .filters,
+  .user-area,
+  .form-actions,
+  .call-detail-head,
+  .call-detail-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .topbar {
+    gap: 14px;
+  }
+
+  .filters {
+    width: 100%;
+  }
+
+  .pill {
+    width: 100%;
+    text-align: center;
+  }
+
+  .user-area {
+    gap: 8px;
+  }
+
+  .form-grid,
+  .records-grid,
+  .status-cards,
+  .shop-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid {
+    gap: 14px;
+  }
+
+  .form-card,
+  .tab-page {
+    padding: 16px;
+  }
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
@@ -1268,6 +1342,7 @@ tbody tr:nth-child(odd) {
 
   .nav-item {
     padding: 12px 10px;
+    font-size: 0.82rem;
   }
 
   .donut-wrap {
