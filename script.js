@@ -17,6 +17,11 @@ document.addEventListener('DOMContentLoaded', () => {
     date: '',
     status: 'Todos'
   };
+  const dashboardFilters = {
+    date: '',
+    store: 'Todos',
+    advisor: 'Todos'
+  };
   const recordsPageSize = 6;
   let recordsPage = 1;
 
@@ -59,6 +64,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     return '';
   };
+  const getDashboardCalls = () => calls.filter((call) => {
+    const matchesDate = !dashboardFilters.date || normalizeDateForFilter(call.fecha) === dashboardFilters.date;
+    const matchesStore = dashboardFilters.store === 'Todos' || call.tienda === dashboardFilters.store;
+    const matchesAdvisor = dashboardFilters.advisor === 'Todos' || call.asesor === dashboardFilters.advisor;
+    return matchesDate && matchesStore && matchesAdvisor;
+  });
   const updateCurrentDateTime = () => {
     const pill = document.querySelector('#date-time-pill');
     if (!pill) return;
@@ -178,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderRecords() {
     const rows = getFilteredCalls();
+    const dashboardRows = getDashboardCalls().slice().reverse();
     const recentBody = document.querySelector('#recent-calls-body');
     const recordsList = document.querySelector('#records-list');
     const pagination = document.querySelector('#records-pagination');
@@ -188,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
     recordsPage = Math.min(recordsPage, totalPages);
     const pageStart = (recordsPage - 1) * recordsPageSize;
     const pageRows = rows.slice(pageStart, pageStart + recordsPageSize);
-    const rowHtml = rows.slice(0, 10).map((call) => `<tr>
+    const rowHtml = dashboardRows.slice(0, 10).map((call) => `<tr>
       <td>${call.fecha}</td><td>${call.telefono}</td><td>${call.cliente}</td>
       <td>${call.asesor}</td><td>${call.tienda}</td><td>${call.motivo}</td>
       <td>${call.estado}${call.estadoSecundario ? ` + ${call.estadoSecundario}` : ''}</td><td>—</td><td class="actions">●</td>
@@ -233,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderJustifications() {
-    const justifiedCalls = calls.filter((call) => call.estado === 'Justificada' || call.estadoSecundario === 'Justificada');
+    const justifiedCalls = getDashboardCalls().filter((call) => call.estado === 'Justificada' || call.estadoSecundario === 'Justificada');
     const list = document.querySelector('#justification-list');
     document.querySelector('[data-justification-approved="true"]').textContent = justifiedCalls.length;
     document.querySelector('[data-justification-pending="true"]').textContent = 0;
@@ -246,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const reasonNames = ['Alta demanda', 'Llamada colgada', 'Falla del sistema', 'Fuera de horario', 'Otros'];
     const counts = Object.fromEntries(reasonNames.map((name) => [name, 0]));
 
-    calls.forEach((call) => {
+    getDashboardCalls().forEach((call) => {
       const normalized = String(call.justificatorio || '').trim();
       if (!normalized) return;
 
@@ -279,13 +291,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateDashboardData() {
+    const dashboardCalls = getDashboardCalls();
     const hasStatus = (call, status) => call.estado === status || call.estadoSecundario === status;
-    dashboardData.total = calls.length;
-    dashboardData.atendidas = calls.filter((call) => hasStatus(call, 'Atendida')).length;
-    dashboardData.noContestadas = calls.filter((call) => hasStatus(call, 'No contestada')).length;
-    dashboardData.justificadas = calls.filter((call) => hasStatus(call, 'Justificada')).length;
+    dashboardData.total = dashboardCalls.length;
+    dashboardData.atendidas = dashboardCalls.filter((call) => hasStatus(call, 'Atendida')).length;
+    dashboardData.noContestadas = dashboardCalls.filter((call) => hasStatus(call, 'No contestada')).length;
+    dashboardData.justificadas = dashboardCalls.filter((call) => hasStatus(call, 'Justificada')).length;
     dashboardData.noJustificadas = Math.max(0, dashboardData.noContestadas - dashboardData.justificadas);
-    dashboardData.recuperadas = calls.filter((call) => hasStatus(call, 'Recuperación de llamadas')).length;
+    dashboardData.recuperadas = dashboardCalls.filter((call) => hasStatus(call, 'Recuperación de llamadas')).length;
     renderDashboard();
     renderRecords();
     renderJustifications();
@@ -302,13 +315,30 @@ document.addEventListener('DOMContentLoaded', () => {
         : [];
 
     calls = rows.filter((call) => call && (call.cliente || call.telefono || call.asesor || call.tienda || call.motivo || call.estado));
+    renderDashboardFilters();
     updateDashboardData();
     renderAdvisorChart();
+  }
+
+  function renderDashboardFilters() {
+    const storeFilter = document.querySelector('#dashboard-store-filter');
+    const advisorFilter = document.querySelector('#dashboard-advisor-filter');
+    if (!storeFilter || !advisorFilter) return;
+    const configuredStores = ['Santa Clara', 'Chaclacayo', 'Surco'];
+    const dataStores = calls.map((call) => String(call.tienda || '').trim()).filter(Boolean);
+    const stores = [...new Set([...configuredStores, ...dataStores])].sort();
+    const callAdvisors = calls.map((call) => String(call.asesor || '').trim()).filter(Boolean);
+    const advisorNames = [...new Set([...advisors.map((advisor) => advisor.nombre), ...callAdvisors])].sort();
+    storeFilter.innerHTML = '<option value="Todos">Todas las tiendas</option>' + stores.map((store) => `<option value="${store}">${store}</option>`).join('');
+    advisorFilter.innerHTML = '<option value="Todos">Todos los asesores</option>' + advisorNames.map((advisor) => `<option value="${advisor}">${advisor}</option>`).join('');
+    storeFilter.value = dashboardFilters.store;
+    advisorFilter.value = dashboardFilters.advisor;
   }
 
   function renderAdvisors() {
     const list = document.querySelector('#assessor-list');
     list.innerHTML = advisors.map((advisor) => `<div class="assessor-item"><div><strong>${advisor.nombre}</strong><small>Atendidas: 0%</small></div><span class="score green">0</span></div>`).join('') || '<p class="empty-message">Aún no hay asesores registrados.</p>';
+    renderDashboardFilters();
     renderAdvisorChart();
   }
 
@@ -316,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const chart = document.querySelector('#advisor-chart-bars');
     const counts = advisors.map((advisor) => ({
       nombre: advisor.nombre,
-      total: calls.filter((call) => call.asesor === advisor.nombre && call.estado === 'No contestada').length
+      total: getDashboardCalls().filter((call) => call.asesor === advisor.nombre && call.estado === 'No contestada').length
     }));
     const maximum = Math.max(...counts.map((item) => item.total), 1);
     chart.innerHTML = counts.map((item) => `<div class="bar-group"><span class="bar orange" style="height: ${Math.round((item.total / maximum) * 100)}%"></span><label>${item.nombre}</label></div>`).join('');
@@ -353,8 +383,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const recordsDateFilter = document.querySelector('#records-date-filter');
   const recordsStatusFilter = document.querySelector('#records-status-filter');
   const clearRecordsFiltersButton = document.querySelector('#clear-records-filters');
+  const dashboardStoreFilter = document.querySelector('#dashboard-store-filter');
+  const dashboardAdvisorFilter = document.querySelector('#dashboard-advisor-filter');
+  const dashboardDateFilter = document.querySelector('#dashboard-date-filter');
   const previousRecordsPageButton = document.querySelector('#records-prev-page');
   const nextRecordsPageButton = document.querySelector('#records-next-page');
+
+  const refreshDashboardFilters = () => {
+    updateDashboardData();
+    renderAdvisorChart();
+  };
+
+  dashboardStoreFilter.addEventListener('change', (event) => {
+    dashboardFilters.store = event.target.value;
+    refreshDashboardFilters();
+  });
+
+  dashboardAdvisorFilter.addEventListener('change', (event) => {
+    dashboardFilters.advisor = event.target.value;
+    refreshDashboardFilters();
+  });
+
+  dashboardDateFilter.addEventListener('change', (event) => {
+    dashboardFilters.date = event.target.value;
+    refreshDashboardFilters();
+  });
 
   recordsDateFilter.addEventListener('change', (event) => {
     recordFilters.date = event.target.value;
