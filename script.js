@@ -104,6 +104,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const minutes = String(match[2]).padStart(2, '0');
     return `${hours}:${minutes}`;
   };
+  const formatCallDate = (value) => {
+    const raw = String(value || '').trim();
+    if (!raw) return '-';
+    const dayFirstMatch = raw.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/);
+    if (dayFirstMatch) {
+      return `${dayFirstMatch[1].padStart(2, '0')}/${dayFirstMatch[2].padStart(2, '0')}/${dayFirstMatch[3]}`;
+    }
+    const isoMatch = raw.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
+    if (isoMatch) {
+      return `${isoMatch[3].padStart(2, '0')}/${isoMatch[2].padStart(2, '0')}/${isoMatch[1]}`;
+    }
+    const englishDateMatch = raw.match(/^[A-Za-z]{3}\s+([A-Za-z]{3})\s+(\d{1,2})\s+\d{2}:\d{2}:\d{2}\s+\d{4}/);
+    if (englishDateMatch) {
+      const monthNames = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
+      const year = raw.match(/\b(\d{4})\b/);
+      const month = monthNames[englishDateMatch[1]];
+      if (month && year) return `${englishDateMatch[2].padStart(2, '0')}/${month}/${year[1]}`;
+    }
+    return raw.split(' ')[0];
+  };
   const formatDuration = (value) => {
     const rawValue = String(value || '').trim();
     if (!rawValue) return '-';
@@ -219,12 +239,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const pageStart = (recordsPage - 1) * recordsPageSize;
     const pageRows = rows.slice(pageStart, pageStart + recordsPageSize);
     const rowHtml = dashboardRows.slice(0, 10).map((call) => `<tr>
-      <td>${call.fecha}</td><td>${call.telefono}</td><td>${call.cliente}</td>
+      <td>${formatCallDate(call.fecha)}</td><td>${call.telefono}</td><td>${call.cliente}</td>
       <td>${call.asesor}</td><td>${call.tienda}</td><td>${call.motivo}</td>
       <td>${call.estado}${call.estadoSecundario ? ` + ${call.estadoSecundario}` : ''}</td><td>—</td><td class="actions">●</td>
     </tr>`).join('');
     recentBody.innerHTML = rowHtml || '<tr><td colspan="9">Aún no hay llamadas registradas.</td></tr>';
-    recordsList.innerHTML = pageRows.map((call) => `<article class="record-card" data-call-index="${calls.findIndex((item) => item === call)}"><div><span>Fecha y hora</span><strong>${(call.fecha || '-').split(' ')[0]} ${resolveCallTime(call)}</strong></div><div><span>Duración</span><strong>${formatDuration(call.duracion)}</strong></div><div><span>Número</span><strong>${call.telefono || '-'}</strong></div><div><span>Estado</span><strong>${call.estado || '-'}${call.estadoSecundario ? ` + ${call.estadoSecundario}` : ''}</strong></div><div><span>Ver detalle</span><strong>→</strong></div></article>`).join('') || '<p class="empty-message">Aún no hay registros.</p>';
+    recordsList.innerHTML = pageRows.map((call) => `<article class="record-card" data-call-index="${calls.findIndex((item) => item === call)}"><div><span>Fecha y hora</span><strong>${formatCallDate(call.fecha)} ${resolveCallTime(call)}</strong></div><div><span>Duración</span><strong>${formatDuration(call.duracion)}</strong></div><div><span>Número</span><strong>${call.telefono || '-'}</strong></div><div><span>Estado</span><strong>${call.estado || '-'}${call.estadoSecundario ? ` + ${call.estadoSecundario}` : ''}</strong></div><div><span>Ver detalle</span><strong>→</strong></div></article>`).join('') || '<p class="empty-message">Aún no hay registros.</p>';
     pagination.hidden = rows.length <= recordsPageSize;
     pageIndicator.textContent = `Página ${recordsPage} de ${totalPages}`;
     previousPageButton.disabled = recordsPage === 1;
@@ -262,7 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const detail = document.querySelector('#call-detail');
     const secondaryStatusField = document.querySelector('.detail-secondary-status');
     const fields = {
-      '#detail-date': (call.fecha || '').split(' ')[0],
+      '#detail-date': formatCallDate(call.fecha),
       '#detail-time': resolveCallTime(call),
       '#detail-duration': formatDuration(call.duracion),
       '#detail-phone': call.telefono,
