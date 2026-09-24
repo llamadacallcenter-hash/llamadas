@@ -87,8 +87,22 @@
             </div>
 
             <div class="filters">
-              <div class="pill">Todas las tiendas</div>
-              <div class="pill">Todos los asesores</div>
+              <label class="dashboard-filter">
+                <span>Tienda</span>
+                <select id="dashboard-store-filter" aria-label="Filtrar por tienda">
+                  <option value="Todos">Todas las tiendas</option>
+                </select>
+              </label>
+              <label class="dashboard-filter">
+                <span>Asesor</span>
+                <select id="dashboard-advisor-filter" aria-label="Filtrar por asesor">
+                  <option value="Todos">Todos los asesores</option>
+                </select>
+              </label>
+              <label class="dashboard-filter dashboard-date-filter">
+                <span>Fecha</span>
+                <input id="dashboard-date-filter" type="date" aria-label="Filtrar por fecha" />
+              </label>
             </div>
 
             <div class="user-area">
@@ -570,6 +584,6 @@
       </main>
     </div>
 
-    <script src="script.js?v=6"></script>
+    <script src="script.js?v=9"></script>
   </body>
 </html>
