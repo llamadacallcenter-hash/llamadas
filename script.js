@@ -692,6 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const callTimeInput = callForm.querySelector('input[name="hora"]');
   const durationInput = callForm.querySelector('input[name="duracion"]');
   const primaryStatus = callForm.querySelector('select[name="estado"]');
+  let lastUsedDate = getLocalDateValue();
   const secondaryStatus = callForm.querySelector('select[name="estadoSecundario"]');
   const justificationField = callForm.querySelector('#justification-field');
   const justificationSelect = callForm.querySelector('select[name="justificacionTipo"]');
@@ -714,10 +715,20 @@ document.addEventListener('DOMContentLoaded', () => {
     event.target.value = formatDurationInput(event.target.value);
   });
 
-  callDateInput.value = getLocalDateValue();
+  callDateInput.value = lastUsedDate;
   callTimeInput.value = getLocalTimeValue();
+  callDateInput.defaultValue = lastUsedDate;
+  callTimeInput.defaultValue = getLocalTimeValue();
   updateCurrentDateTime();
   setInterval(updateCurrentDateTime, 30000);
+
+  callForm.addEventListener('reset', () => {
+    callDateInput.value = lastUsedDate;
+    callTimeInput.value = getLocalTimeValue();
+    callDateInput.defaultValue = lastUsedDate;
+    callTimeInput.defaultValue = getLocalTimeValue();
+    toggleJustificationField();
+  });
 
   function toggleJustificationField() {
     const isJustified = primaryStatus.value === 'Justificada' || secondaryStatus.value === 'Justificada';
@@ -787,9 +798,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const formData = new URLSearchParams(new FormData(callForm));
-      if (justificationSelect.value) {
-        formData.set('justificatorio', justificationSelect.value === 'Otros' ? (justificationInput.value || '').trim() : justificationSelect.value);
+      const justificatorioValor = justificationSelect.value === 'Otros'
+        ? (justificationInput.value || '').trim()
+        : (justificationSelect.value || '').trim();
+
+      if (justificationSelect.value || justificationInput.value) {
+        formData.set('justificatorio', justificatorioValor || (justificationInput.value || '').trim());
       }
+
       if (recoverySelect.value) {
         formData.set('resultadoRecuperacion', recoverySelect.value);
       }
@@ -802,9 +818,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       formStatus.textContent = 'Llamada guardada en Google Sheets.';
       formStatus.className = 'form-status success';
+      lastUsedDate = callDateInput.value || getLocalDateValue();
       callForm.reset();
-      callDateInput.value = getLocalDateValue();
+      callDateInput.value = lastUsedDate;
       callTimeInput.value = getLocalTimeValue();
+      callDateInput.defaultValue = lastUsedDate;
+      callTimeInput.defaultValue = getLocalTimeValue();
       await new Promise((resolve) => setTimeout(resolve, 700));
       await loadCalls();
     } catch (error) {
