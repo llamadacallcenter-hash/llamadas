@@ -14,11 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
   let advisors = [];
   let selectedCall = null;
   const recordFilters = {
-    date: '',
+    month: '',
+    dateFrom: '',
+    dateTo: '',
     status: 'Todos'
   };
   const dashboardFilters = {
-    date: '',
+    month: '',
+    dateFrom: '',
+    dateTo: '',
     store: 'Todos',
     advisor: 'Todos'
   };
@@ -64,11 +68,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     return '';
   };
+  const toMonthKey = (dateValue) => {
+    const normalized = normalizeDateForFilter(dateValue);
+    return normalized ? normalized.slice(0, 7) : '';
+  };
+  const matchesDateRange = (dateValue, fromValue, toValue) => {
+    const normalized = normalizeDateForFilter(dateValue);
+    if (!normalized) return true;
+    if (fromValue && normalized < fromValue) return false;
+    if (toValue && normalized > toValue) return false;
+    return true;
+  };
   const getDashboardCalls = () => calls.filter((call) => {
-    const matchesDate = !dashboardFilters.date || normalizeDateForFilter(call.fecha) === dashboardFilters.date;
+    const matchesMonth = !dashboardFilters.month || toMonthKey(call.fecha) === dashboardFilters.month;
+    const matchesDateFrom = matchesDateRange(call.fecha, dashboardFilters.dateFrom, '');
+    const matchesDateTo = matchesDateRange(call.fecha, '', dashboardFilters.dateTo);
     const matchesStore = dashboardFilters.store === 'Todos' || call.tienda === dashboardFilters.store;
     const matchesAdvisor = dashboardFilters.advisor === 'Todos' || call.asesor === dashboardFilters.advisor;
-    return matchesDate && matchesStore && matchesAdvisor;
+    return matchesMonth && matchesDateFrom && matchesDateTo && matchesStore && matchesAdvisor;
   });
   const updateCurrentDateTime = () => {
     const pill = document.querySelector('#date-time-pill');
@@ -180,10 +197,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function getFilteredCalls() {
     return calls.filter((call) => {
-      const callDate = normalizeDateForFilter(call.fecha);
-      const matchesDate = !recordFilters.date || callDate === recordFilters.date;
+      const matchesMonth = !recordFilters.month || toMonthKey(call.fecha) === recordFilters.month;
+      const matchesDateFrom = matchesDateRange(call.fecha, recordFilters.dateFrom, '');
+      const matchesDateTo = matchesDateRange(call.fecha, '', recordFilters.dateTo);
       const matchesStatus = recordFilters.status === 'Todos' || call.estado === recordFilters.status || call.estadoSecundario === recordFilters.status;
-      return matchesDate && matchesStatus;
+      return matchesMonth && matchesDateFrom && matchesDateTo && matchesStatus;
     }).slice().reverse();
   }
 
@@ -216,6 +234,29 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('[data-record-average="true"]').textContent = numberFormat(rows.length);
   }
 
+  function renderReports() {
+    const now = new Date();
+    const filteredCalls = getDashboardCalls();
+    const currentMonth = dashboardFilters.month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - 6);
+    const monthlyCalls = filteredCalls.filter((call) => {
+      const normalizedDate = normalizeDateForFilter(call.fecha);
+      return normalizedDate && (dashboardFilters.month ? normalizedDate.startsWith(dashboardFilters.month) : normalizedDate.startsWith(currentMonth));
+    });
+    const weeklyCalls = filteredCalls.filter((call) => {
+      const normalizedDate = normalizeDateForFilter(call.fecha);
+      if (!normalizedDate) return false;
+      const callDate = new Date(`${normalizedDate}T00:00:00`);
+      return callDate >= weekStart && callDate <= today;
+    });
+    const monthlyAttended = monthlyCalls.filter((call) => call.estado === 'Atendida' || call.estadoSecundario === 'Atendida').length;
+    const monthlyEfficiency = monthlyCalls.length ? Math.round((monthlyAttended / monthlyCalls.length) * 100) : 0;
+    document.querySelector('[data-report-monthly-efficiency="true"]').textContent = `${monthlyEfficiency}%`;
+    document.querySelector('[data-report-weekly-total="true"]').textContent = numberFormat(weeklyCalls.length);
+  }
+
   function showCallDetail(call) {
     selectedCall = call;
     const detail = document.querySelector('#call-detail');
@@ -246,11 +287,97 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderJustifications() {
     const justifiedCalls = getDashboardCalls().filter((call) => call.estado === 'Justificada' || call.estadoSecundario === 'Justificada');
-    const list = document.querySelector('#justification-list');
+    const recoveryCalls = getDashboardCalls().filter((call) => call.estado === 'Recuperación de llamadas' || call.estadoSecundario === 'Recuperación de llamadas');
+    const recoveryChart = document.querySelector('#recovery-chart');
+    const recoveryTotal = document.querySelector('#recovery-total');
+    const recoveryCustomerCalledRate = document.querySelector('#recovery-customer-called-rate');
+    const recoveryWeContactedRate = document.querySelector('#recovery-we-contacted-rate');
+    const justificationPageChart = document.querySelector('#justification-page-chart');
+    const justificationPageTotal = document.querySelector('#justification-page-total');
+    const justificationReasonEls = {
+      'Alta demanda': document.querySelector('#justification-altademanda'),
+      'Llamada colgada': document.querySelector('#justification-colgada'),
+      'Falla del sistema': document.querySelector('#justification-falla'),
+      'Fuera de horario': document.querySelector('#justification-fuera'),
+      Otros: document.querySelector('#justification-otros')
+    };
+
+    const recoveryTotals = {
+      'Cliente llamó': 0,
+      'Nos contactamos': 0
+    };
+
+    recoveryCalls.forEach((call) => {
+      const label = String(call.resultadoRecuperacion || call.tipoRecuperacion || '').trim();
+      if (label === 'Cliente llamó') recoveryTotals['Cliente llamó'] += 1;
+      if (label === 'Nos contactamos') recoveryTotals['Nos contactamos'] += 1;
+    });
+
+    const reasonNames = ['Alta demanda', 'Llamada colgada', 'Falla del sistema', 'Fuera de horario', 'Otros'];
+    const reasonCounts = Object.fromEntries(reasonNames.map((name) => [name, 0]));
+
+    justifiedCalls.forEach((call) => {
+      const normalized = String(call.justificatorio || '').trim();
+      if (!normalized) return;
+      const lower = normalized.toLowerCase();
+      let reason = null;
+      if (lower.includes('alta demanda')) reason = 'Alta demanda';
+      else if (lower.includes('llamada colgada') || lower.includes('llamada simultánea')) reason = 'Llamada colgada';
+      else if (lower.includes('falla del sistema')) reason = 'Falla del sistema';
+      else if (lower.includes('fuera de horario')) reason = 'Fuera de horario';
+      else if (lower.includes('otro')) reason = 'Otros';
+      if (reason) reasonCounts[reason] += 1;
+    });
+
+    const totalReasons = Object.values(reasonCounts).reduce((sum, count) => sum + count, 0);
+    const orderedReasonNames = Object.keys(reasonCounts);
+    const chartSegments = [];
+    let cumulative = 0;
+
+    orderedReasonNames.forEach((name) => {
+      const count = reasonCounts[name];
+      if (!count) return;
+      const start = cumulative;
+      const end = cumulative + (count / totalReasons) * 100;
+      cumulative = end;
+      chartSegments.push(`${name === 'Alta demanda' ? 'var(--blue)' : name === 'Llamada colgada' ? 'var(--green)' : name === 'Falla del sistema' ? 'var(--yellow)' : name === 'Fuera de horario' ? 'var(--orange)' : 'var(--gray)'} ${start}% ${end}%`);
+      if (justificationReasonEls[name]) {
+        const percentage = totalReasons ? Math.round((count / totalReasons) * 100) : 0;
+        justificationReasonEls[name].textContent = `${percentage}%`;
+      }
+    });
+
+    const totalRecovery = recoveryCalls.length;
+    const customerCalled = recoveryTotals['Cliente llamó'];
+    const weContacted = recoveryTotals['Nos contactamos'];
+    const customerPct = totalRecovery ? Math.round((customerCalled / totalRecovery) * 100) : 0;
+    const contactPct = totalRecovery ? Math.round((weContacted / totalRecovery) * 100) : 0;
+
+    recoveryTotal.textContent = totalRecovery;
+    recoveryCustomerCalledRate.textContent = `${customerPct}%`;
+    recoveryWeContactedRate.textContent = `${contactPct}%`;
+
+    if (totalRecovery > 0) {
+      const end = customerPct;
+      recoveryChart.style.background = `conic-gradient(var(--green) 0 ${end}%, var(--orange) ${end}% 100%)`;
+      recoveryChart.classList.remove('empty');
+    } else {
+      recoveryChart.style.background = '';
+      recoveryChart.classList.add('empty');
+    }
+
+    justificationPageTotal.textContent = totalReasons;
+    if (totalReasons > 0) {
+      justificationPageChart.style.background = `conic-gradient(${chartSegments.join(', ')})`;
+      justificationPageChart.classList.remove('empty');
+    } else {
+      justificationPageChart.style.background = '';
+      justificationPageChart.classList.add('empty');
+    }
+
     document.querySelector('[data-justification-approved="true"]').textContent = justifiedCalls.length;
     document.querySelector('[data-justification-pending="true"]').textContent = 0;
     document.querySelector('[data-justification-rejected="true"]').textContent = 0;
-    list.innerHTML = justifiedCalls.map((call) => `<li>${call.justificatorio || 'Sin detalle de justificatorio'}${call.fecha ? ` - ${call.fecha}` : ''}</li>`).join('') || '<li>Aún no hay justificatorios registrados.</li>';
   }
 
   function renderReasonBreakdown() {
@@ -301,6 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dashboardData.recuperadas = dashboardCalls.filter((call) => hasStatus(call, 'Recuperación de llamadas')).length;
     renderDashboard();
     renderRecords();
+    renderReports();
     renderJustifications();
     renderReasonBreakdown();
   }
@@ -320,6 +448,27 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAdvisorChart();
   }
 
+  function renderMonthFilters() {
+    const monthValues = [...new Set(calls.map((call) => toMonthKey(call.fecha)).filter(Boolean))].sort().reverse();
+    const optionMarkup = monthValues.map((monthKey) => {
+      const date = new Date(`${monthKey}-01T00:00:00`);
+      const label = date.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+      return `<option value="${monthKey}">${label}</option>`;
+    }).join('');
+
+    const dashboardMonthFilter = document.querySelector('#dashboard-month-filter');
+    if (dashboardMonthFilter) {
+      dashboardMonthFilter.innerHTML = '<option value="">Todos los meses</option>' + optionMarkup;
+      dashboardMonthFilter.value = dashboardFilters.month;
+    }
+
+    const recordsMonthFilter = document.querySelector('#records-month-filter');
+    if (recordsMonthFilter) {
+      recordsMonthFilter.innerHTML = '<option value="">Todos</option>' + optionMarkup;
+      recordsMonthFilter.value = recordFilters.month;
+    }
+  }
+
   function renderDashboardFilters() {
     const storeFilter = document.querySelector('#dashboard-store-filter');
     const advisorFilter = document.querySelector('#dashboard-advisor-filter');
@@ -333,6 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
     advisorFilter.innerHTML = '<option value="Todos">Todos los asesores</option>' + advisorNames.map((advisor) => `<option value="${advisor}">${advisor}</option>`).join('');
     storeFilter.value = dashboardFilters.store;
     advisorFilter.value = dashboardFilters.advisor;
+    renderMonthFilters();
   }
 
   function renderAdvisors() {
@@ -380,12 +530,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  const recordsDateFilter = document.querySelector('#records-date-filter');
+  const recordsDateFromFilter = document.querySelector('#records-date-from-filter');
+  const recordsDateToFilter = document.querySelector('#records-date-to-filter');
+  const recordsMonthFilter = document.querySelector('#records-month-filter');
   const recordsStatusFilter = document.querySelector('#records-status-filter');
   const clearRecordsFiltersButton = document.querySelector('#clear-records-filters');
+  const clearDashboardFiltersButton = document.querySelector('#clear-dashboard-filters');
   const dashboardStoreFilter = document.querySelector('#dashboard-store-filter');
   const dashboardAdvisorFilter = document.querySelector('#dashboard-advisor-filter');
-  const dashboardDateFilter = document.querySelector('#dashboard-date-filter');
+  const dashboardMonthFilter = document.querySelector('#dashboard-month-filter');
+  const dashboardDateFromFilter = document.querySelector('#dashboard-date-from-filter');
+  const dashboardDateToFilter = document.querySelector('#dashboard-date-to-filter');
   const previousRecordsPageButton = document.querySelector('#records-prev-page');
   const nextRecordsPageButton = document.querySelector('#records-next-page');
 
@@ -404,13 +559,35 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshDashboardFilters();
   });
 
-  dashboardDateFilter.addEventListener('change', (event) => {
-    dashboardFilters.date = event.target.value;
+  dashboardMonthFilter.addEventListener('change', (event) => {
+    dashboardFilters.month = event.target.value;
     refreshDashboardFilters();
   });
 
-  recordsDateFilter.addEventListener('change', (event) => {
-    recordFilters.date = event.target.value;
+  dashboardDateFromFilter.addEventListener('change', (event) => {
+    dashboardFilters.dateFrom = event.target.value;
+    refreshDashboardFilters();
+  });
+
+  dashboardDateToFilter.addEventListener('change', (event) => {
+    dashboardFilters.dateTo = event.target.value;
+    refreshDashboardFilters();
+  });
+
+  recordsDateFromFilter.addEventListener('change', (event) => {
+    recordFilters.dateFrom = event.target.value;
+    recordsPage = 1;
+    renderRecords();
+  });
+
+  recordsDateToFilter.addEventListener('change', (event) => {
+    recordFilters.dateTo = event.target.value;
+    recordsPage = 1;
+    renderRecords();
+  });
+
+  recordsMonthFilter.addEventListener('change', (event) => {
+    recordFilters.month = event.target.value;
     recordsPage = 1;
     renderRecords();
   });
@@ -422,12 +599,30 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   clearRecordsFiltersButton.addEventListener('click', () => {
-    recordFilters.date = '';
+    recordFilters.month = '';
+    recordFilters.dateFrom = '';
+    recordFilters.dateTo = '';
     recordFilters.status = 'Todos';
     recordsPage = 1;
-    recordsDateFilter.value = '';
+    recordsMonthFilter.value = '';
+    recordsDateFromFilter.value = '';
+    recordsDateToFilter.value = '';
     recordsStatusFilter.value = 'Todos';
     renderRecords();
+  });
+
+  clearDashboardFiltersButton.addEventListener('click', () => {
+    dashboardFilters.month = '';
+    dashboardFilters.dateFrom = '';
+    dashboardFilters.dateTo = '';
+    dashboardFilters.store = 'Todos';
+    dashboardFilters.advisor = 'Todos';
+    dashboardMonthFilter.value = '';
+    dashboardDateFromFilter.value = '';
+    dashboardDateToFilter.value = '';
+    dashboardStoreFilter.value = 'Todos';
+    dashboardAdvisorFilter.value = 'Todos';
+    refreshDashboardFilters();
   });
 
   previousRecordsPageButton.addEventListener('click', () => {
@@ -501,6 +696,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const justificationField = callForm.querySelector('#justification-field');
   const justificationSelect = callForm.querySelector('select[name="justificacionTipo"]');
   const justificationInput = callForm.querySelector('textarea[name="justificatorio"]');
+  const recoveryField = callForm.querySelector('#recovery-field');
+  const recoverySelect = callForm.querySelector('select[name="resultadoRecuperacion"]');
   const assessorForm = document.querySelector('#assessor-form');
   const assessorStatus = document.querySelector('#assessor-status');
 
@@ -524,18 +721,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function toggleJustificationField() {
     const isJustified = primaryStatus.value === 'Justificada' || secondaryStatus.value === 'Justificada';
+    const isRecovery = primaryStatus.value === 'Recuperación de llamadas' || secondaryStatus.value === 'Recuperación de llamadas';
     const isOther = justificationSelect.value === 'Otros';
 
     justificationField.classList.toggle('hidden', !isJustified);
+    recoveryField.classList.toggle('hidden', !isRecovery);
     justificationSelect.required = isJustified;
     justificationInput.required = isJustified && isOther;
     justificationInput.classList.toggle('hidden', !isOther);
+    recoverySelect.required = isRecovery;
 
     if (!isJustified) {
       justificationSelect.value = '';
       justificationInput.value = '';
     } else if (!isOther) {
       justificationInput.value = '';
+    }
+
+    if (!isRecovery) {
+      recoverySelect.value = '';
     }
   }
 
@@ -585,6 +789,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const formData = new URLSearchParams(new FormData(callForm));
       if (justificationSelect.value) {
         formData.set('justificatorio', justificationSelect.value === 'Otros' ? (justificationInput.value || '').trim() : justificationSelect.value);
+      }
+      if (recoverySelect.value) {
+        formData.set('resultadoRecuperacion', recoverySelect.value);
       }
       await fetch(GOOGLE_SHEETS_ENDPOINT, {
         method: 'POST',
