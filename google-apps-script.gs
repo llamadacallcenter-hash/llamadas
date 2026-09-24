@@ -13,6 +13,50 @@ function formatDurationValue(value) {
   return `${hours}:${minutes}`;
 }
 
+function normalizeDateOnly(value) {
+  if (!value) return '';
+  if (value instanceof Date) {
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), 'dd/MM/yyyy');
+  }
+  const raw = String(value).trim();
+  if (!raw) return '';
+  const englishDateMatch = raw.match(/^[A-Za-z]{3}\s+([A-Za-z]{3})\s+(\d{1,2})\s+\d{2}:\d{2}:\d{2}\s+\d{4}/);
+  if (englishDateMatch) {
+    const monthNames = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
+    const year = raw.match(/\b(\d{4})\b/);
+    const month = monthNames[englishDateMatch[1]];
+    if (month && year) return `${englishDateMatch[2].padStart(2, '0')}/${month}/${year[1]}`;
+  }
+  const isoMatch = raw.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
+  if (isoMatch) {
+    return `${isoMatch[3].padStart(2, '0')}/${isoMatch[2].padStart(2, '0')}/${isoMatch[1]}`;
+  }
+  const dayFirstMatch = raw.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/);
+  if (dayFirstMatch) {
+    return `${dayFirstMatch[1].padStart(2, '0')}/${dayFirstMatch[2].padStart(2, '0')}/${dayFirstMatch[3]}`;
+  }
+  const datePart = raw.split(/[ T]/)[0];
+  return datePart;
+}
+
+function normalizeTimeOnly(value) {
+  if (!value) return '';
+  if (value instanceof Date) {
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), 'HH:mm');
+  }
+  const raw = String(value).trim();
+  if (!raw) return '';
+  const match = raw.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if (match) {
+    return `${String(match[1]).padStart(2, '0')}:${String(match[2]).padStart(2, '0')}`;
+  }
+  const dateTimeMatch = raw.match(/\b(\d{1,2}):(\d{2})(?::(\d{2}))?\b/);
+  if (dateTimeMatch) {
+    return `${String(dateTimeMatch[1]).padStart(2, '0')}:${String(dateTimeMatch[2]).padStart(2, '0')}`;
+  }
+  return raw.slice(0, 5);
+}
+
 function doGet(event) {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 
@@ -38,20 +82,26 @@ function doGet(event) {
       if (key) headerMap[key] = index;
     });
 
-    const columnCount = Math.max(sheet.getLastColumn(), 11);
+    const columnCount = Math.max(sheet.getLastColumn(), 12);
     const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, columnCount).getValues();
     values.forEach((row) => {
       const date = row[0] instanceof Date ? row[0] : new Date(row[0]);
       const durationIndex = headerMap['duración'] !== undefined ? headerMap['duración'] : headerMap['duracion'];
       const justificationIndex = headerMap['justificatorio'] !== undefined ? headerMap['justificatorio'] : headerMap['justificativos'];
+      const recoveryIndex = headerMap['resultado recuperación'] !== undefined
+        ? headerMap['resultado recuperación']
+        : headerMap['resultado_recuperacion'] !== undefined
+          ? headerMap['resultado_recuperacion']
+          : headerMap['resultadorecuperacion'];
       const duracion = durationIndex !== undefined ? formatDurationValue(row[durationIndex]) : '';
       const justificatorio = String((justificationIndex !== undefined ? row[justificationIndex] : row[10] || row[9]) || '');
+      const resultadoRecuperacion = recoveryIndex !== undefined ? String(row[recoveryIndex] || '') : String(row[11] || '');
+      const fecha = normalizeDateOnly(row[0]);
+      const hora = normalizeTimeOnly(row[8] || (row[0] instanceof Date ? row[0] : row[0]));
       rows.push({
         fila: values.indexOf(row) + 2,
-        fecha: Utilities.formatDate(date, Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm'),
-        hora: row[8] instanceof Date
-          ? Utilities.formatDate(row[8], Session.getScriptTimeZone(), 'HH:mm')
-          : String(row[8] || Utilities.formatDate(date, Session.getScriptTimeZone(), 'HH:mm')).slice(0, 5),
+        fecha: fecha || Utilities.formatDate(date, Session.getScriptTimeZone(), 'dd/MM/yyyy'),
+        hora: hora || Utilities.formatDate(date, Session.getScriptTimeZone(), 'HH:mm'),
         duracion: duracion,
         cliente: String(row[1] || ''),
         telefono: String(row[2] || ''),
@@ -60,7 +110,8 @@ function doGet(event) {
         motivo: String(row[5] || ''),
         estado: String(row[6] || ''),
         estadoSecundario: String(row[7] || ''),
-        justificatorio: justificatorio
+        justificatorio: justificatorio,
+        resultadoRecuperacion: resultadoRecuperacion
       });
     });
   }
@@ -103,19 +154,21 @@ function doPost(event) {
   const sheet = spreadsheet.getSheetByName(SHEET_NAME) || spreadsheet.insertSheet(SHEET_NAME);
 
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['Fecha', 'Cliente', 'Telefono', 'Asesor', 'Tienda', 'Motivo', 'Estado', 'Estado adicional', 'Hora', 'Duración', 'Justificatorio']);
-  } else if (sheet.getLastColumn() < 11) {
-    const headerRow = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 11)).getValues()[0];
+    sheet.appendRow(['Fecha', 'Cliente', 'Telefono', 'Asesor', 'Tienda', 'Motivo', 'Estado', 'Estado adicional', 'Hora', 'Duración', 'Justificatorio', 'Resultado recuperación']);
+  } else if (sheet.getLastColumn() < 12) {
+    const headerRow = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 12)).getValues()[0];
     if (!headerRow[9] || String(headerRow[9]).toLowerCase() !== 'duración') {
-      sheet.getRange(1, 10, 1, 2).setValues([['Duración', 'Justificatorio']]);
+      sheet.getRange(1, 10, 1, 3).setValues([['Duración', 'Justificatorio', 'Resultado recuperación']]);
+    } else if (!headerRow[11] || String(headerRow[11]).toLowerCase() !== 'resultado recuperación') {
+      sheet.getRange(1, 12, 1, 1).setValue('Resultado recuperación');
     }
   }
 
   const data = event.parameter;
-  const callDate = data.fecha ? new Date(`${data.fecha}T${data.hora || '12:00'}:00`) : new Date();
+  const callDate = data.fecha ? data.fecha : Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
   const nextRow = sheet.getLastRow() + 1;
   sheet.getRange(nextRow, 10).setNumberFormat('@');
-  sheet.getRange(nextRow, 1, 1, 11).setValues([[
+  sheet.getRange(nextRow, 1, 1, 12).setValues([[
     callDate,
     data.cliente || '',
     data.telefono || '',
@@ -126,7 +179,8 @@ function doPost(event) {
     data.estadoSecundario || '',
     data.hora || '',
     data.duracion || '',
-    data.justificatorio || ''
+    data.justificatorio || '',
+    data.resultadoRecuperacion || ''
   ]]);
 
   return ContentService
