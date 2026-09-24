@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const GOOGLE_SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwWV79Initu2abOtN8AwPgvvg51De4BwDax-MaGj8H6696-fOX3GQif2Yvi2cnskJHJ/exec';
+  const GOOGLE_SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxl7N09I8dZaqykrmVg9-SIK4KEUBY3q8En_PaCfMwrnGTGWiwyfS-WArSR92UBwOOO/exec';
 
   const dashboardData = {
     total: 0,
