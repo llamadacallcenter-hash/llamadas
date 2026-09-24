@@ -740,6 +740,38 @@ button, input, select {
   flex: 0 1 auto;
 }
 
+.dashboard-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 148px;
+  color: #5d4f49;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.dashboard-filter select,
+.dashboard-filter input {
+  min-height: 38px;
+  border: 1px solid rgba(90, 70, 62, 0.16);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #2f2723;
+  padding: 8px 10px;
+  font-size: 0.82rem;
+}
+
+.dashboard-filter select:focus,
+.dashboard-filter input:focus {
+  outline: none;
+  border-color: rgba(242, 106, 31, 0.7);
+  box-shadow: 0 0 0 3px rgba(242, 106, 31, 0.12);
+}
+
+.dashboard-date-filter {
+  min-width: 145px;
+}
+
 .pill {
   background: rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(90, 70, 62, 0.14);
