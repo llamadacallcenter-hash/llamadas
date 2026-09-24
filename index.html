@@ -99,10 +99,21 @@
                   <option value="Todos">Todos los asesores</option>
                 </select>
               </label>
-              <label class="dashboard-filter dashboard-date-filter">
-                <span>Fecha</span>
-                <input id="dashboard-date-filter" type="date" aria-label="Filtrar por fecha" />
+              <label class="dashboard-filter">
+                <span>Mes</span>
+                <select id="dashboard-month-filter" aria-label="Filtrar por mes">
+                  <option value="">Todos los meses</option>
+                </select>
               </label>
+              <label class="dashboard-filter dashboard-date-filter">
+                <span>Desde</span>
+                <input id="dashboard-date-from-filter" type="date" aria-label="Filtrar desde fecha" />
+              </label>
+              <label class="dashboard-filter dashboard-date-filter">
+                <span>Hasta</span>
+                <input id="dashboard-date-to-filter" type="date" aria-label="Filtrar hasta fecha" />
+              </label>
+              <button type="button" class="secondary-btn" id="clear-dashboard-filters">Limpiar filtro</button>
             </div>
 
             <div class="user-area">
@@ -398,6 +409,14 @@
                   </select>
                   <textarea name="justificatorio" rows="3" class="hidden" placeholder="Escribe el motivo de la justificación"></textarea>
                 </label>
+                <label class="recovery-field hidden" id="recovery-field">
+                  <span>Tipo de recuperación</span>
+                  <select name="resultadoRecuperacion">
+                    <option value="">Seleccionar opción</option>
+                    <option value="Cliente llamó">Cliente llamó</option>
+                    <option value="Nos contactamos">Nos contactamos</option>
+                  </select>
+                </label>
               </div>
               <div class="form-actions">
                 <button class="primary-btn" type="submit">Guardar llamada</button>
@@ -431,8 +450,18 @@
 
             <div class="records-filters">
               <label class="record-filter">
-                <span>Fecha</span>
-                <input id="records-date-filter" type="date" />
+                <span>Mes</span>
+                <select id="records-month-filter">
+                  <option value="">Todos</option>
+                </select>
+              </label>
+              <label class="record-filter">
+                <span>Desde</span>
+                <input id="records-date-from-filter" type="date" />
+              </label>
+              <label class="record-filter">
+                <span>Hasta</span>
+                <input id="records-date-to-filter" type="date" />
               </label>
               <label class="record-filter">
                 <span>Estado</span>
@@ -495,9 +524,67 @@
                 <strong data-justification-rejected="true">0</strong>
               </div>
             </div>
-            <ul class="note-list" id="justification-list">
-              <li>Aún no hay justificatorios registrados.</li>
-            </ul>
+            <div class="recovery-section justification-chart-section">
+              <div class="recovery-donut-wrap">
+                <div class="donut-chart recovery-chart empty" id="justification-page-chart">
+                  <div class="donut-center">
+                    <strong id="justification-page-total">0</strong>
+                    <span>motivos</span>
+                  </div>
+                </div>
+                <div class="legend-list recovery-legend">
+                  <div class="legend-item">
+                    <span class="dot blue"></span>
+                    <span>Alta demanda</span>
+                    <strong id="justification-altademanda">0%</strong>
+                  </div>
+                  <div class="legend-item">
+                    <span class="dot green"></span>
+                    <span>Llamada colgada</span>
+                    <strong id="justification-colgada">0%</strong>
+                  </div>
+                  <div class="legend-item">
+                    <span class="dot yellow"></span>
+                    <span>Falla del sistema</span>
+                    <strong id="justification-falla">0%</strong>
+                  </div>
+                  <div class="legend-item">
+                    <span class="dot orange"></span>
+                    <span>Fuera de horario</span>
+                    <strong id="justification-fuera">0%</strong>
+                  </div>
+                  <div class="legend-item">
+                    <span class="dot gray"></span>
+                    <span>Otros</span>
+                    <strong id="justification-otros">0%</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="recovery-section">
+              <h3>Recuperación de llamadas</h3>
+              <div class="recovery-donut-wrap">
+                <div class="donut-chart recovery-chart empty" id="recovery-chart">
+                  <div class="donut-center">
+                    <strong id="recovery-total">0</strong>
+                    <span>recuperadas</span>
+                  </div>
+                </div>
+                <div class="legend-list recovery-legend">
+                  <div class="legend-item">
+                    <span class="dot green"></span>
+                    <span>Cliente llamó</span>
+                    <strong id="recovery-customer-called-rate">0%</strong>
+                  </div>
+                  <div class="legend-item">
+                    <span class="dot orange"></span>
+                    <span>Nos contactamos</span>
+                    <strong id="recovery-we-contacted-rate">0%</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -548,12 +635,12 @@
             <h2>Reportes</h2>
             <div class="report-box">
               <p>Reporte mensual</p>
-              <strong>0%</strong>
+              <strong data-report-monthly-efficiency="true">0%</strong>
               <small>eficiencia general del call center</small>
             </div>
             <div class="report-box muted">
               <p>Reporte semanal</p>
-              <strong>0</strong>
+              <strong data-report-weekly-total="true">0</strong>
               <small>llamadas procesadas</small>
             </div>
           </div>
@@ -584,6 +671,6 @@
       </main>
     </div>
 
-    <script src="script.js?v=9"></script>
+    <script src="script.js?v=17"></script>
   </body>
 </html>
